@@ -4,6 +4,12 @@ private class ICWFTextualVizualizerContext: NSObject {
 
     private var _blocksToDisplay: [ICWFTVDisplayBlock] = []
     fileprivate var blocksToDisplay: [ICWFTVDisplayBlock] { _blocksToDisplay }
+    
+    private var _displayedSteps: [ICWFStep] = []
+    fileprivate var displayedSteps: [ICWFStep] { _displayedSteps }
+    
+    private var _nonTerminatedSteps: [ICWFStep] = []
+    fileprivate var nonTerminatedSteps: [ICWFStep] { _nonTerminatedSteps }
 
     private var _cycleFromSteps: [ICWFStep] = []
     fileprivate var cycleFromSteps: [ICWFStep] { _cycleFromSteps }
@@ -11,13 +17,7 @@ private class ICWFTextualVizualizerContext: NSObject {
     private var _cycleToSteps: [ICWFStep] = []
     fileprivate var cycleToSteps: [ICWFStep] { _cycleToSteps }
 
-    private var _displayedSteps: [ICWFStep] = []
-    fileprivate var displayedSteps: [ICWFStep] { _displayedSteps }
-
     fileprivate var maxWidth: Int = 0
-
-    private var _nonTerminatedSteps: [ICWFStep] = []
-    fileprivate var nonTerminatedSteps: [ICWFStep] { _nonTerminatedSteps }
 
     func addBlockToDisplay(_ newBlock: ICWFTVDisplayBlock) {
         _blocksToDisplay.append(newBlock)
@@ -25,7 +25,7 @@ private class ICWFTextualVizualizerContext: NSObject {
             maxWidth = newBlock.maxWidth
         }
     }
-
+    
     func addDisplayedStep(_ step: ICWFStep) {
         _displayedSteps.append(step)
     }
@@ -51,7 +51,7 @@ open class ICWFTextualVizualizer: NSObject {
     func descriptionOfWorkflow(_ workflow: ICWorkflow) -> String {
         let context = ICWFTextualVizualizerContext()
         let beginBlock = ICWFTVUnDecoratedDisplayBlock()
-        beginBlock.addString("\n\nBegin Workflow")
+        beginBlock.addString("\n\nBegin Workflow '\(String(describing: workflow.name))'" as NSString)
         context.addBlockToDisplay(beginBlock)
         context.addBlockToDisplay(ICWFTVSeparatorDisplayBlock())
 
@@ -72,7 +72,7 @@ open class ICWFTextualVizualizer: NSObject {
         }
 
         let endBlock = ICWFTVUnDecoratedDisplayBlock()
-        endBlock.addString("\nEnd Workflow\n")
+        endBlock.addString("\nEnd Workflow '\(String(describing: workflow.name))'\n" as NSString)
         context.addBlockToDisplay(endBlock)
 
         context.maxWidth += 4
@@ -107,7 +107,7 @@ open class ICWFTextualVizualizer: NSObject {
 
     fileprivate func renderFlow(fromStep firstStep: ICWFStep?, flowName: String, parentStep: ICWFStep?, context: ICWFTextualVizualizerContext) {
         let beginBlock = ICWFTVUnDecoratedDisplayBlock()
-        let flowContext = (parentStep != nil) ? "{ \(parentStep!.index). \(parentStep!.description) }" : ""
+        let flowContext = (parentStep != nil) ? "( \(parentStep!.index). \(parentStep!.description) )" : ""
         if flowName.count > 0 {
 
             beginBlock.addString("\nBegin a flow '\(flowName)'" as NSString)
@@ -143,7 +143,11 @@ open class ICWFTextualVizualizer: NSObject {
                 newBlock.addString("")
             }
             for chain in chains where chain != currentStep!.nextChain {
-                let chainLinkDescription = (chain.firstStep != nil) ? "Shown below" : "??__UNASSIGNED__??"
+                var chainLinkDescription = "shown in the specific section"
+                if chain.firstStep == nil {
+                    chainLinkDescription = "??__UNASSIGNED__??"
+                    context.addNonTerminatedStep(currentStep!)
+                }
                 newBlock.addString("\(String(describing: chain.chainDescription)): \(chainLinkDescription)" as NSString)
             }
             context.addBlockToDisplay(newBlock)
@@ -179,7 +183,6 @@ open class ICWFTextualVizualizer: NSObject {
         } else {
             endBlock.addString("End of the main flow" as NSString)
         }
-        endBlock.addString("")
         context.addBlockToDisplay(endBlock)
         context.addBlockToDisplay(ICWFTVSeparatorDisplayBlock())
     }

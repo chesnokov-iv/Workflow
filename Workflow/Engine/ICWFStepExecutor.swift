@@ -41,7 +41,7 @@ public class ICWFStepExecutor: NSObject {
             }
             
             #if DEBUG
-            print("Start step: \(infoOfStep(stepToStart))");
+            print("Start step: \(String(describing: weakSelf?.infoOfStep(stepToStart)))")
             #endif
             
             stepToStart._sys_make()
@@ -50,7 +50,7 @@ public class ICWFStepExecutor: NSObject {
 
     public func completeStep(_ step: ICWFStep?) {
         #if DEBUG
-        print("Finished step: \(infoOfStep(step))");
+        print("Finished step: \(infoOfStep(step))")
         #endif
         
         _lock.lock()

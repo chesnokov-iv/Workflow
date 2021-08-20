@@ -38,7 +38,7 @@ open class ICWFStep: NSObject {
         #endif
     }
 
-    //Service method (used by executor). Don't call it directly or override it
+    // Service method (used by executor). Don't call it directly or override it
     func _sys_make() {
         _isCompleted = false
         make()

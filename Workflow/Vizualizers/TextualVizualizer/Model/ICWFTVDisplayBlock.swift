@@ -11,7 +11,9 @@ open class ICWFTVDisplayBlock: NSObject {
     public func addString(_ newString: NSString) {
         let subStrings = newString.components(separatedBy: "\n")
         for subString in subStrings {
-            if subString.count > _maxWidth { _maxWidth = subString.count }
+            if subString.count > _maxWidth {
+                _maxWidth = subString.count
+            }
             _strings.append(subString)
         }
     }
