@@ -34,7 +34,7 @@ open class ICWFStep: NSObject {
 
     deinit {
         #if DEBUG
-        print("The step '\(String(describing: description))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
+        print("ICWF: The step '\(String(describing: description))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
         #endif
     }
 

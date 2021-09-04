@@ -8,7 +8,7 @@ public class ICWFStepExecutor: NSObject {
     private var _deletionLock: ICWFStepExecutor?
 
     deinit {
-        print("The object [\(NSStringFromClass(self.classForCoder))] is deallocating")
+        print("ICWF: The object [\(NSStringFromClass(self.classForCoder))] is deallocating")
     }
 
     public func executeStep(_ step: ICWFStep?) {
@@ -41,7 +41,7 @@ public class ICWFStepExecutor: NSObject {
             }
             
             #if DEBUG
-            print("Start step: \(String(describing: weakSelf?.infoOfStep(stepToStart)))")
+            print("ICWF: Start step: \(String(describing: weakSelf?.infoOfStep(stepToStart)))")
             #endif
             
             stepToStart._sys_make()
@@ -50,7 +50,7 @@ public class ICWFStepExecutor: NSObject {
 
     public func completeStep(_ step: ICWFStep?) {
         #if DEBUG
-        print("Finished step: \(infoOfStep(step))")
+        print("ICWF: Finished step: \(infoOfStep(step))")
         #endif
         
         _lock.lock()

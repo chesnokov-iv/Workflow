@@ -20,24 +20,35 @@ open class ICWorkflow: NSObject {
 
     deinit {
         #if DEBUG
-        print("The workflow '\(String(describing: self.name))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
+        print("ICWF: The workflow '\(String(describing: self.name))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
         #endif
     }
 
     public func firstStep(is firstStepObj: ICWFStep?) -> ICWFStep? {
+        guard let firstStep = firstStepObj else {
+            return nil
+        }
+        
         guard _firstStepObj == nil else {
             return nextStep(firstStepObj)
         }
 
-        firstStepObj?.owner = self
-        if firstStepObj != nil {
-            _steps.append(firstStepObj!)
-        }
-        _firstStepObj = firstStepObj
-        _firstStepObj?.index = _steps.count
+        registerStep(firstStep)
+
+        _firstStepObj = firstStep
         _lastStepObj = _firstStepObj
 
         return _firstStepObj
+    }
+    
+    public func registerStep(_ step: ICWFStep) {
+        _steps.append(step)
+        
+        step.owner = self
+
+        if step.index == 0 {
+            step.index = _steps.count
+        }
     }
 
     public func nextStep(_ nextStepObj: ICWFStep?) -> ICWFStep? {
@@ -45,18 +56,16 @@ open class ICWorkflow: NSObject {
     }
 
     public func nextStep(for targetChain: ICWFChain?, is nextStepObj: ICWFStep?) -> ICWFStep? {
-        guard targetChain?.firstStep == nil, let nextStep = nextStepObj else {
+        guard
+            let targetChainObj = targetChain,
+            targetChainObj.firstStep == nil,
+            let nextStep = nextStepObj
+        else {
             return nil
         }
-
-        nextStep.owner = self
-        _steps.append(nextStep)
+        
+        registerStep(nextStep)
         targetChain!.firstStep = nextStep
-
-        if nextStep.index == 0 {
-            nextStep.index = _steps.count
-        }
-
         _lastStepObj = nextStep
         return _lastStepObj
     }
