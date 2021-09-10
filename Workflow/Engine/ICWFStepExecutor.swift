@@ -41,7 +41,9 @@ public class ICWFStepExecutor: NSObject {
             }
             
             #if DEBUG
-            print("ICWF: Start step: \(String(describing: weakSelf?.infoOfStep(stepToStart)))")
+            if let strongSelf = weakSelf {
+            print("ICWF: Start step: \(strongSelf.infoOfStep(stepToStart))")
+            }
             #endif
             
             stepToStart._sys_make()
@@ -80,7 +82,8 @@ public class ICWFStepExecutor: NSObject {
         result.append(" \(step.description)")
         result.append(" (\(NSStringFromClass(step.classForCoder)))")
         result.append(" {\(Unmanaged.passUnretained(step).toOpaque())}")
-        result.append(" [WF:\(String(describing: step.owner?.name))]")
+        let workflowName = step.owner?.name ?? "N/A"
+        result.append(" [WF:\(workflowName)]")
         return result
     }
 }

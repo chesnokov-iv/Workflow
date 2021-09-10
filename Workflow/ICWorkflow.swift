@@ -20,7 +20,8 @@ open class ICWorkflow: NSObject {
 
     deinit {
         #if DEBUG
-        print("ICWF: The workflow '\(String(describing: self.name))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
+        let workflowName = self.name ?? "N/A"
+        print("ICWF: The workflow '\(workflowName)' (\(NSStringFromClass(self.classForCoder))) is deallocating")
         #endif
     }
 

@@ -51,7 +51,7 @@ open class ICWFTextualVizualizer: NSObject {
     func descriptionOfWorkflow(_ workflow: ICWorkflow) -> String {
         let context = ICWFTextualVizualizerContext()
         let beginBlock = ICWFTVUnDecoratedDisplayBlock()
-        beginBlock.addString("\n\nBegin Workflow '\(String(describing: workflow.name))'" as NSString)
+        beginBlock.addString(NSString(format: "\n\nBegin Workflow '%@'", (workflow.name ?? "") as NSString))
         context.addBlockToDisplay(beginBlock)
         context.addBlockToDisplay(ICWFTVSeparatorDisplayBlock())
 
@@ -72,7 +72,7 @@ open class ICWFTextualVizualizer: NSObject {
         }
 
         let endBlock = ICWFTVUnDecoratedDisplayBlock()
-        endBlock.addString("\nEnd Workflow '\(String(describing: workflow.name))'\n" as NSString)
+        endBlock.addString(NSString(format: "\nEnd Workflow '%@'\n", (workflow.name ?? "") as NSString))
         context.addBlockToDisplay(endBlock)
 
         context.maxWidth += 4
@@ -148,7 +148,7 @@ open class ICWFTextualVizualizer: NSObject {
                     chainLinkDescription = "??__UNASSIGNED__??"
                     context.addNonTerminatedStep(currentStep!)
                 }
-                newBlock.addString("\(String(describing: chain.chainDescription)): \(chainLinkDescription)" as NSString)
+                newBlock.addString(NSString(format: "%@: %@", (chain.chainDescription ?? "__CHAIN_UNDESCRIBED__") as NSString, chainLinkDescription))
             }
             context.addBlockToDisplay(newBlock)
             context.addDisplayedStep(currentStep!)

@@ -100,4 +100,17 @@ open class ICWFStep: NSObject {
         }
         return result
     }
+    
+    open func stepDescriptionForErrors() -> String {
+        guard let safeStepDescription = stepDescription else {
+            return ""
+        }
+        
+        if safeStepDescription.length < 2 {
+            return safeStepDescription.lowercased
+        }
+        
+        let result = String(format: "%@%@", safeStepDescription.substring(to: 1).lowercased(), safeStepDescription.substring(from: 1))
+        return result
+    }
 }
