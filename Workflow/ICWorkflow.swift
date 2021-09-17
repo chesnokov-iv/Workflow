@@ -90,7 +90,7 @@ open class ICWorkflow: NSObject {
         ICWorkflow.wfPool.add(self)
         
         if ICWorkflow.wfPool.indexOfObjectIdentical(to: self) == 0 {
-            //The workflow should be started, if it is the first item in the pool
+            // The workflow should be started, if it is the first item in the pool
             execute()
         }
         
