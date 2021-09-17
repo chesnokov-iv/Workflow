@@ -81,6 +81,22 @@ open class ICWorkflow: NSObject {
         executor.executeStep(_firstStepObj)
     }
 
+    static private var wfPool = NSMutableArray()
+    static private let wfPoolLock = NSRecursiveLock()
+    
+    public func executeGlobally() {
+
+        ICWorkflow.wfPoolLock.lock()
+        ICWorkflow.wfPool.add(self)
+        
+        if ICWorkflow.wfPool.indexOfObjectIdentical(to: self) == 0 {
+            //The workflow should be started, if it is the first item in the pool
+            execute()
+        }
+        
+        ICWorkflow.wfPoolLock.unlock()
+    }
+    
     public func registerArtifact(_ artifact: NSObject?) {
         guard let nonNilArtifact = artifact, _artifacts.indexOfObjectIdentical(to: nonNilArtifact) == NSNotFound else { return }
         _artifacts.add(nonNilArtifact)
@@ -106,6 +122,17 @@ open class ICWorkflow: NSObject {
             }
             step.owner = nil
         }
+        
+        ICWorkflow.wfPoolLock.lock()
+        
+        ICWorkflow.wfPool.removeObject(identicalTo: self)
+        let nextWorkflowToStart = ICWorkflow.wfPool.firstObject as? ICWorkflow
+        
+        if nextWorkflowToStart != nil {
+            nextWorkflowToStart?.execute()
+        }
+        
+        ICWorkflow.wfPoolLock.unlock()
     }
 
     open override var description: String {
