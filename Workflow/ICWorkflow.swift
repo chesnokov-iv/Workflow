@@ -1,6 +1,6 @@
 import UIKit
 
-open class ICWorkflow: NSObject {
+open class ICWorkflow: ICRTOBJCObject {
 
     private var _nameObj: String?
     public var name: String? { _nameObj }
@@ -81,20 +81,22 @@ open class ICWorkflow: NSObject {
         executor.executeStep(_firstStepObj)
     }
 
-    static private var wfPool = NSMutableArray()
+    static private var wfPool: [ICWorkflow] = []
     static private let wfPoolLock = NSRecursiveLock()
     
     public func executeGlobally() {
 
         ICWorkflow.wfPoolLock.lock()
-        ICWorkflow.wfPool.add(self)
+        ICWorkflow.wfPool.append(self)
+        ICWorkflow.wfPoolLock.unlock()
         
-        if ICWorkflow.wfPool.indexOfObjectIdentical(to: self) == 0 {
+        if
+            let fWfl = ICWorkflow.wfPool.first,
+            fWfl.objUniqueIdentifier() == self.objUniqueIdentifier()
+        {
             // The workflow should be started, if it is the first item in the pool
             execute()
         }
-        
-        ICWorkflow.wfPoolLock.unlock()
     }
     
     public func registerArtifact(_ artifact: NSObject?) {
@@ -125,14 +127,27 @@ open class ICWorkflow: NSObject {
         
         ICWorkflow.wfPoolLock.lock()
         
-        ICWorkflow.wfPool.removeObject(identicalTo: self)
-        let nextWorkflowToStart = ICWorkflow.wfPool.firstObject as? ICWorkflow
-        
-        if nextWorkflowToStart != nil {
-            nextWorkflowToStart?.execute()
+        let requredId = self.objUniqueIdentifier()
+        var requredIdx = -1
+        for idx in 0..<ICWorkflow.wfPool.count {
+            if ICWorkflow.wfPool[idx].objUniqueIdentifier() == requredId {
+                requredIdx = idx
+                break
+            }
         }
         
+        if requredIdx == -1 {
+            ICWorkflow.wfPoolLock.unlock()
+            return
+        }
+        
+        ICWorkflow.wfPool.remove(at: requredIdx)
+        
+        let nextWorkflowToStart: ICWorkflow? = ICWorkflow.wfPool.first
+        
         ICWorkflow.wfPoolLock.unlock()
+        
+        nextWorkflowToStart?.execute()
     }
 
     open override var description: String {
