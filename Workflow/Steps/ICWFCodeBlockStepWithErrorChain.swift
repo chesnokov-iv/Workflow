@@ -3,6 +3,7 @@ import UIKit
 open class ICWFCodeBlockStepWithErrorChain: ICWFStepWithErrorChain {
 
     public var codeBlock:(_ currentStep: ICWFCodeBlockStepWithErrorChain) -> Void = {_ in }
+    private var hasError = false
 
     public override init() {
         super.init()
@@ -11,12 +12,23 @@ open class ICWFCodeBlockStepWithErrorChain: ICWFStepWithErrorChain {
 
     open override func make() {
         super.make()
+        hasError = false
         doStep()
+        
+        if hasError {
+            return
+        }
+        
         complete()
     }
 
     func doStep() {
         codeBlock(self)
+    }
+    
+    public override func completeWithError(_ errorData: NSObject?) {
+        hasError = true
+        super.completeWithError(errorData)
     }
 
     open override func cleanNewObject() -> AnyObject {

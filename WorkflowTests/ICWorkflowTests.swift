@@ -1,7 +1,15 @@
 import XCTest
 @testable import Mutualink_LNK360
 
+class ICWorkflowTestCase: NSObject {
+    var name: String = ""
+    var initialExecutionSequence = NSMutableArray()
+    var expectedExecutionSequence = NSMutableArray()
+}
+
 class ICWorkflowTests: XCTestCase {
+    
+    let BREAK_WORKFLOW = "0" as NSString
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -10,10 +18,30 @@ class ICWorkflowTests: XCTestCase {
     override func tearDownWithError() throws {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
-
+    
     func test_execute() throws {
+        let wfTestCase = ICWorkflowTestCase()
+        
+        wfTestCase.name = "A workflow's execution test"
+        wfTestCase.initialExecutionSequence = ["1", "2", "3"] as NSMutableArray
+        wfTestCase.expectedExecutionSequence = ["1", "2", "3"] as NSMutableArray
+        
+        try verify_case(wfTestCase)
+    }
+    
+    func test_cancel() throws {
+        let wfTestCase = ICWorkflowTestCase()
+        
+        wfTestCase.name = "A workflow's cancellation test"
+        wfTestCase.initialExecutionSequence = ["1", "2", BREAK_WORKFLOW, "3"] as NSMutableArray
+        wfTestCase.expectedExecutionSequence = ["1", "2"] as NSMutableArray
+        
+        try verify_case(wfTestCase)
+    }
+    
+    func verify_case(_ wfTestCase: ICWorkflowTestCase) throws {
 
-        var testWorkflow: ICWorkflow? = ICWorkflow(withName: "A workflow's execution test")
+        var testWorkflow: ICWorkflow? = ICWorkflow(withName: wfTestCase.name)
         
         var deletionObject: NSObject? = NSObject()
         let deletionSensor = ICWFDeletionSensor(withObjectToWatch: deletionObject)
@@ -25,16 +53,17 @@ class ICWorkflowTests: XCTestCase {
         var stepsDeletionSensors: [ICWFDeletionSensor] = []
         
         let actualExecutionSequence = NSMutableArray()
-        let expectedExecutionSequence: NSMutableArray = ["1", "2", "3"] as NSMutableArray
+        let initialExecutionSequence =  wfTestCase.initialExecutionSequence
+        let expectedExecutionSequence = wfTestCase.expectedExecutionSequence
         
-        for expectedSequenceItem in expectedExecutionSequence {
-            if let expectedSequenceString = expectedSequenceItem as? NSString {
+        for sequenceItem in initialExecutionSequence {
+            if let expectedSequenceString = sequenceItem as? NSString {
+                
+                let step = stepFor(expectedSequenceString: expectedSequenceString, actualExecutionSequence: actualExecutionSequence)
+                
                 let stepsDeletionSensor = ICWFDeletionSensor(
                     withObjectToWatch: testWorkflow?.firstStep(
-                        is: ICWFTestableStep(
-                            withDescription: expectedSequenceString,
-                            and: actualExecutionSequence
-                        )
+                        is: step
                     )
                 )
                 stepsDeletionSensors.append(stepsDeletionSensor)
@@ -66,5 +95,18 @@ class ICWorkflowTests: XCTestCase {
 
         self.waitForExpectations(timeout: 3.0)
         print("ICWF: TEST FINISHED")
+    }
+
+    func stepFor(expectedSequenceString: NSString, actualExecutionSequence: NSMutableArray) -> ICWFStep {
+        switch expectedSequenceString {
+            case BREAK_WORKFLOW:
+                return ICWFCancellationStep()
+                
+            default:
+                return ICWFTestableStep(
+                    withDescription: expectedSequenceString,
+                    and: actualExecutionSequence
+                )
+        }
     }
 }

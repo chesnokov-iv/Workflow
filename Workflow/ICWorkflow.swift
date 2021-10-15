@@ -13,6 +13,9 @@ open class ICWorkflow: ICRTOBJCObject {
     private let _artifacts = NSMutableArray()
     private var _steps: [ICWFStep] = []
     private var _inProgress = false
+    
+    private var _isCancelled = false
+    public var isCancelled: Bool { _isCancelled }
 
     public init(withName name: String) {
         _nameObj = name
@@ -104,16 +107,20 @@ open class ICWorkflow: ICRTOBJCObject {
         _artifacts.add(nonNilArtifact)
     }
 
-    public func loadValue(_ value: NSObject?) -> ICWFStep? {
+    public func loadValue(_ value: NSObject?) -> ICWFStep {
         return ICWFInitWithValueStep(with: value)
     }
 
-    public func endStep() -> ICWFStep? {
+    public func endStep() -> ICWFStep {
         return ICWFEndStep()
     }
 
     public func endFlow() {
         _ = nextStep(endStep())
+    }
+    
+    public func cancel() {
+        _isCancelled = true
     }
 
     // used by IMLWF2EndStep

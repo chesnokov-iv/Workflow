@@ -12,7 +12,7 @@ public class ICWFStepExecutor: NSObject {
     }
 
     public func executeStep(_ step: ICWFStep?) {
-        guard let nextStep = step else {
+        guard var nextStep = step else {
             _deletionLock = nil
             return
         }
@@ -20,6 +20,11 @@ public class ICWFStepExecutor: NSObject {
         _deletionLock = self
 
         _lock.lock()
+    
+        if let currentWorkflow = nextStep.owner, currentWorkflow.isCancelled {
+            nextStep = currentWorkflow.endStep()
+            currentWorkflow.registerStep(nextStep)
+        }
 
         if _currentStep != nil {
             
