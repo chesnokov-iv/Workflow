@@ -33,9 +33,9 @@ open class ICWFStep: NSObject {
     }
 
     deinit {
-        #if DEBUG
+#if ALWAYS_LOG_WORKFLOWS || DEBUG
         print("ICWF: The step '\(String(describing: description))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
-        #endif
+#endif
     }
 
     // Service method (used by executor). Don't call it directly or override it

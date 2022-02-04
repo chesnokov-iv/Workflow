@@ -6,9 +6,11 @@ public class ICWFStepExecutor: NSObject {
     private let _lock = NSRecursiveLock()
     fileprivate var _currentStep: ICWFStep?
     private var _deletionLock: ICWFStepExecutor?
-
+    
     deinit {
+#if ALWAYS_LOG_WORKFLOWS || DEBUG
         print("ICWF: The object [\(NSStringFromClass(self.classForCoder))] is deallocating")
+#endif
     }
 
     public func executeStep(_ step: ICWFStep?) {
@@ -45,20 +47,20 @@ public class ICWFStepExecutor: NSObject {
                 return
             }
             
-            #if DEBUG
+#if ALWAYS_LOG_WORKFLOWS || DEBUG
             if let strongSelf = weakSelf {
-            print("ICWF: Start step: \(strongSelf.infoOfStep(stepToStart))")
+                print("ICWF: Start step: \(strongSelf.infoOfStep(stepToStart))")
             }
-            #endif
+#endif
             
             stepToStart._sys_make()
         }
     }
 
     public func completeStep(_ step: ICWFStep?) {
-        #if DEBUG
+#if ALWAYS_LOG_WORKFLOWS || DEBUG
         print("ICWF: Finished step: \(infoOfStep(step))")
-        #endif
+#endif
         
         _lock.lock()
         if _currentStep == step {

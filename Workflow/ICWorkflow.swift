@@ -22,10 +22,10 @@ open class ICWorkflow: ICRTOBJCObject {
     }
 
     deinit {
-        #if DEBUG
+#if ALWAYS_LOG_WORKFLOWS || DEBUG
         let workflowName = self.name ?? "N/A"
         print("ICWF: The workflow '\(workflowName)' (\(NSStringFromClass(self.classForCoder))) is deallocating")
-        #endif
+#endif
     }
 
     public func firstStep(is firstStepObj: ICWFStep?) -> ICWFStep? {
@@ -80,6 +80,9 @@ open class ICWorkflow: ICRTOBJCObject {
 
     public func execute() {
         _inProgress = true
+#if ALWAYS_LOG_WORKFLOWS || DEBUG
+        print("ICWF: START_WORKFLOW: \(self.name ?? "") [\(NSStringFromClass(self.classForCoder))] - {\(Unmanaged.passUnretained(self).toOpaque())}")
+#endif
         let executor = ICWFStepExecutor()
         executor.executeStep(_firstStepObj)
     }
@@ -125,6 +128,11 @@ open class ICWorkflow: ICRTOBJCObject {
 
     // used by IMLWF2EndStep
     public func destroy() {
+        
+#if ALWAYS_LOG_WORKFLOWS || DEBUG
+        print("ICWF: END_WORKFLOW: \(self.name ?? "") [\(NSStringFromClass(self.classForCoder))] - {\(Unmanaged.passUnretained(self).toOpaque())}")
+#endif
+        
         for step in _steps {
             for chain in step.chains {
                 chain.firstStep = nil
