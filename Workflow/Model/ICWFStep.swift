@@ -8,7 +8,13 @@ open class ICWFStep: NSObject {
     public var stepDescription: NSString?
 
     public var executor: ICWFStepExecutor?
-    public var owner: ICWorkflow?
+    public var owner: ICWorkflow? {
+        didSet {
+            logger = owner?.logger
+        }
+    }
+    
+    public var logger: ICBaseLogger?
 
     public var input: NSObject?
     public var output: NSObject?
@@ -34,7 +40,7 @@ open class ICWFStep: NSObject {
 
     deinit {
 #if ALWAYS_LOG_WORKFLOWS || DEBUG
-        print("ICWF: The step '\(String(describing: description))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
+        logger?.log("ICWF: The step '\(String(describing: description))' (\(NSStringFromClass(self.classForCoder))) is deallocating")
 #endif
     }
 

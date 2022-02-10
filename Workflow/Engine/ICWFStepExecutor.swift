@@ -6,11 +6,17 @@ public class ICWFStepExecutor: NSObject {
     private let _lock = NSRecursiveLock()
     fileprivate var _currentStep: ICWFStep?
     private var _deletionLock: ICWFStepExecutor?
+    public var logger: ICBaseLogger
     
     deinit {
 #if ALWAYS_LOG_WORKFLOWS || DEBUG
-        print("ICWF: The object [\(NSStringFromClass(self.classForCoder))] is deallocating")
+        logger.log("ICWF: The object [\(NSStringFromClass(self.classForCoder))] is deallocating")
 #endif
+    }
+    
+    init(logger: ICBaseLogger) {
+        self.logger = logger
+        super.init()
     }
 
     public func executeStep(_ step: ICWFStep?) {
@@ -40,26 +46,25 @@ public class ICWFStepExecutor: NSObject {
         _currentStep!.executor = self
 
         _lock.unlock()
-
-        weak var weakSelf = self
-        DispatchQueue.main.async {
-            guard let stepToStart = weakSelf?._currentStep else {
+        
+        DispatchQueue.main.async { [weak self] in
+            guard
+                let strongSelf = self,
+                let stepToStart = strongSelf._currentStep
+            else {
                 return
             }
             
 #if ALWAYS_LOG_WORKFLOWS || DEBUG
-            if let strongSelf = weakSelf {
-                print("ICWF: Start step: \(strongSelf.infoOfStep(stepToStart))")
-            }
+            strongSelf.logger.log("ICWF: Start step: \(strongSelf.infoOfStep(stepToStart))")
 #endif
-            
             stepToStart._sys_make()
         }
     }
 
     public func completeStep(_ step: ICWFStep?) {
 #if ALWAYS_LOG_WORKFLOWS || DEBUG
-        print("ICWF: Finished step: \(infoOfStep(step))")
+        logger.log("ICWF: Finished step: \(infoOfStep(step))")
 #endif
         
         _lock.lock()

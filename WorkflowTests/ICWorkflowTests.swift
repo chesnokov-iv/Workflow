@@ -41,7 +41,7 @@ class ICWorkflowTests: XCTestCase {
     
     func verify_case(_ wfTestCase: ICWorkflowTestCase) throws {
 
-        var testWorkflow: ICWorkflow? = ICWorkflow(withName: wfTestCase.name)
+        var testWorkflow: ICWorkflow? = ICWorkflow(withName: wfTestCase.name, logger: ICDebugLogger())
         
         var deletionObject: NSObject? = NSObject()
         let deletionSensor = ICWFDeletionSensor(withObjectToWatch: deletionObject)
@@ -94,7 +94,7 @@ class ICWorkflowTests: XCTestCase {
         })
 
         self.waitForExpectations(timeout: 3.0)
-        print("ICWF: TEST FINISHED")
+        testWorkflow?.logger.log("ICWF: TEST FINISHED")
     }
 
     func stepFor(expectedSequenceString: NSString, actualExecutionSequence: NSMutableArray) -> ICWFStep {

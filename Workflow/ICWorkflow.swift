@@ -16,15 +16,18 @@ open class ICWorkflow: ICRTOBJCObject {
     
     private var _isCancelled = false
     public var isCancelled: Bool { _isCancelled }
+    
+    public private(set) var logger :ICBaseLogger!
 
-    public init(withName name: String) {
+    public init(withName name: String, logger :ICBaseLogger) {
         _nameObj = name
+        self.logger = logger
     }
 
     deinit {
 #if ALWAYS_LOG_WORKFLOWS || DEBUG
         let workflowName = self.name ?? "N/A"
-        print("ICWF: The workflow '\(workflowName)' (\(NSStringFromClass(self.classForCoder))) is deallocating")
+        logger.log("ICWF: The workflow '\(workflowName)' (\(NSStringFromClass(self.classForCoder))) is deallocating")
 #endif
     }
 
@@ -81,9 +84,9 @@ open class ICWorkflow: ICRTOBJCObject {
     public func execute() {
         _inProgress = true
 #if ALWAYS_LOG_WORKFLOWS || DEBUG
-        print("ICWF: START_WORKFLOW: \(self.name ?? "") [\(NSStringFromClass(self.classForCoder))] - {\(Unmanaged.passUnretained(self).toOpaque())}")
+        logger.log("ICWF: START_WORKFLOW: \(self.name ?? "") [\(NSStringFromClass(self.classForCoder))] - {\(Unmanaged.passUnretained(self).toOpaque())}")
 #endif
-        let executor = ICWFStepExecutor()
+        let executor = ICWFStepExecutor(logger: self.logger)
         executor.executeStep(_firstStepObj)
     }
 
@@ -130,7 +133,7 @@ open class ICWorkflow: ICRTOBJCObject {
     public func destroy() {
         
 #if ALWAYS_LOG_WORKFLOWS || DEBUG
-        print("ICWF: END_WORKFLOW: \(self.name ?? "") [\(NSStringFromClass(self.classForCoder))] - {\(Unmanaged.passUnretained(self).toOpaque())}")
+        logger.log("ICWF: END_WORKFLOW: \(self.name ?? "") [\(NSStringFromClass(self.classForCoder))] - {\(Unmanaged.passUnretained(self).toOpaque())}")
 #endif
         
         for step in _steps {
